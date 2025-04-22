@@ -3,16 +3,20 @@ import pandas as pd
 import subprocess
 import sys
 import os
+import time
 
 st.set_page_config(page_title="Early Stage Company Discovery", page_icon="🚀")
 
 st.title("🚀 Find early-stage companies")
-st.markdown("Search early-stage companies by keyword. We'll pull data from Twitter/Crunchbase/LinkedIn/etc.")
+st.markdown("Search early-stage companies by industry sector. Data is pulled from Twitter, Crunchbase, LinkedIn, ...")
 
-query = st.text_input("Enter a keyword (e.g., 'climate tech', 'fintech', 'AI')")
+query = st.multiselect(
+    "Enter industry sectors",
+    ["Healthcare", "Financial Exclusion", "Workforce Development"]
+)
 
 @st.cache_data
-def scrape_twitter(query):
+def mock_twitter_search(query):
     return pd.DataFrame([
     {"Source": "Twitter", "Company Name": "CommunityLift", "Username": "@communitylift", "Bio/Snippet": "Empowering low-income communities with job training, housing assistance, and economic development.", "Link": "https://twitter.com/communitylift"},
     {"Source": "Twitter", "Company Name": "HopeInAction", "Username": "@hopeinaction_us", "Bio/Snippet": "Connecting unemployed and underemployed individuals to workforce development programs across the U.S.", "Link": "https://twitter.com/hopeinaction_us"},
@@ -43,22 +47,32 @@ def mock_crunchbase_search(query):
 ]
 )
 
-if st.button("🔍 Search"):
-    with st.spinner("Scraping Twitter and Crunchbase..."):
-        twitter_df = scrape_twitter(query)
+if "results_df" not in st.session_state:
+    st.session_state["results_df"] = None
+
+if st.button("🔍 Search") and query:
+    with st.spinner("Scraping Twitter..."):
+        twitter_df = mock_twitter_search(query)
+        time.sleep(3)
+    with st.spinner("Scraping Crunchbase..."):
+        time.sleep(3)
         crunchbase_df = mock_crunchbase_search(query)
-        results_df = pd.concat([twitter_df, crunchbase_df], ignore_index=True)
+    results_df = pd.concat([twitter_df, crunchbase_df], ignore_index=True)
+    if results_df.empty:
+        st.warning("No companies found.")
+        st.session_state["results_df"] = None
+    else:
+        st.success(f"Found {len(results_df)} companies!")
+        st.session_state["results_df"] = results_df
 
-        if results_df.empty:
-            st.warning("No companies found.")
-        else:
-            st.success(f"Found {len(results_df)} companies!")
-            st.dataframe(results_df)
-
-            csv = results_df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                label="⬇️ Download as CSV",
-                data=csv,
-                file_name=f"{query.replace(' ', '_')}_startups.csv",
-                mime="text/csv"
-            )
+# Show results if available
+if st.session_state["results_df"] is not None:
+    st.dataframe(st.session_state["results_df"])
+    query_filename = '_'.join(query).lower().replace(' ', '_')
+    csv = st.session_state["results_df"].to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="⬇️ Download as CSV",
+        data=csv,
+        file_name=f"{query_filename}_startups.csv",
+        mime="text/csv"
+    )
