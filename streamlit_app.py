@@ -4,13 +4,6 @@ import subprocess
 import sys
 import os
 
-# Ensure snscrape is available
-try:
-    import snscrape.modules.twitter as sntwitter
-except ImportError:
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "snscrape"])
-    import snscrape.modules.twitter as sntwitter
-
 st.set_page_config(page_title="Early Stage Company Discovery", page_icon="🚀")
 
 st.title("🚀 Find early-stage companies")
