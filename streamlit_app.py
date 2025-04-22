@@ -5,9 +5,9 @@ import sys
 import os
 import time
 
-st.set_page_config(page_title="Early Stage Company Discovery", page_icon="🚀")
+st.set_page_config(page_title="LC Acumen America Demo", page_icon="🚀")
 
-st.title("🚀 Find early-stage companies")
+st.title("Find early-stage companies")
 st.markdown("Search early-stage companies by industry sector. Data is pulled from Twitter, Crunchbase, LinkedIn, ...")
 
 query = st.multiselect(
